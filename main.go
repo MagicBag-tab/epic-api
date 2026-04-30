@@ -95,6 +95,8 @@ func sagasHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch r.Method {
+	case http.MethodGet:
+		handleGetSagas(w, r)
 	case http.MethodPost:
 		handleCreateSaga(w, r)
 	default:
@@ -166,6 +168,24 @@ func handleCreateSaga(w http.ResponseWriter, r *http.Request) {
 	id, _ := res.LastInsertId()
 	s.ID = int(id)
 	writeJSON(w, http.StatusCreated, s)
+}
+
+func handleGetSagas(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT id, title, description, image_url FROM sagas")
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	sagas := []Saga{}
+	for rows.Next() {
+		var s Saga
+		rows.Scan(&s.ID, &s.Title, &s.Description, &s.ImageURL)
+		sagas = append(sagas, s)
+	}
+
+	writeJSON(w, http.StatusOK, sagas)
 }
 
 func handleGetSagaByID(w http.ResponseWriter, id int) {
