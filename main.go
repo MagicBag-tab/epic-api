@@ -130,10 +130,10 @@ func songsHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	defer db.Close()
 
-	http.HandleFunc("/sagas", sagasHandler)
-	http.HandleFunc("/sagas/", sagasHandler)
-	http.HandleFunc("/songs", songsHandler)
-	http.HandleFunc("/songs/", songsHandler)
+	http.HandleFunc("/sagas", corsMiddleware(sagasHandler))
+	http.HandleFunc("/sagas/", corsMiddleware(sagasHandler))
+	http.HandleFunc("/songs", corsMiddleware(songsHandler))
+	http.HandleFunc("/songs/", corsMiddleware(songsHandler))
 
 	log.Println("Server is running on http://localhost:8088")
 	log.Fatal(http.ListenAndServe(":8088", nil))
@@ -349,4 +349,17 @@ func handleDeleteSong(w http.ResponseWriter, id int) {
 	}
 
 	writeJSON(w, http.StatusOK, map[string]string{"message": "Song deleted"})
+}
+
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+    return func(w http.ResponseWriter, r *http.Request) {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+        if r.Method == http.MethodOptions {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
+        next(w, r)
+    }
 }
