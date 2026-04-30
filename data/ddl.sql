@@ -2,7 +2,7 @@ CREATE TABLE sagas (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     title       TEXT NOT NULL,
     description TEXT,
-    image_url   TEXT;
+    image_url   TEXT
 );
 
 CREATE TABLE songs (
